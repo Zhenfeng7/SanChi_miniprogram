@@ -1,4 +1,4 @@
-page { background: #f7f5f1; color: #24211e; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; }
+page { background: #f7f5f1; color: #24211e; }
 view, text, image, button, input { box-sizing: border-box; }
 button { border-radius: 0; } button::after { border: 0; }
 .page { padding: 32rpx 32rpx 80rpx; }
