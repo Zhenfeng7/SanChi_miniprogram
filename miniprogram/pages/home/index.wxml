@@ -1,0 +1,16 @@
+<view class="page home">
+  <view class="brand"><view class="brand-cn">三尺美术馆</view><view class="brand-en">SAN CHI ART MUSEUM</view></view>
+  <swiper class="hero" indicator-dots autoplay circular interval="5000">
+    <swiper-item wx:for="{{banners}}" wx:key="*this"><view class="hero-placeholder hero-{{item}}"><view class="hero-shape"></view><view class="hero-caption">艺术，在此发生<text>ART LIVES HERE</text></view></view></swiper-item>
+  </swiper>
+  <view class="section-heading"><view><view class="eyebrow">ON VIEW</view><view class="h2">正在展出</view></view><text class="section-rule"></text></view>
+  <view wx:if="{{!current.length &amp;&amp; !loading}}" class="empty card">展览即将揭晓，敬请期待</view>
+  <view class="card exhibit-card" wx:for="{{current}}" wx:key="_id" data-id="{{item._id}}" bindtap="detail">
+    <image wx:if="{{item.coverImage}}" class="cover" src="{{item.coverImage}}" mode="aspectFill" />
+    <view wx:else class="cover placeholder"><text>三尺 · 展览</text></view>
+    <view class="card-body"><view class="pill">{{item.phase === 'upcoming' ? '即将开幕' : '正在展出'}}</view><view class="exhibit-title">{{item.title}}</view><view class="muted">{{item.startDate}} — {{item.endDate}}</view><view class="detail-link">查看展览与预约 →</view></view>
+  </view>
+  <view class="section-heading"><view><view class="eyebrow">ARCHIVE</view><view class="h2">过往展览</view></view><text class="section-rule"></text></view>
+  <scroll-view class="archive-scroll" scroll-x><view class="archive-row"><view class="archive-item" wx:for="{{past}}" wx:key="_id" data-id="{{item._id}}" bindtap="detail"><image wx:if="{{item.coverImage}}" src="{{item.coverImage}}" mode="aspectFill" /><view wx:else class="archive-placeholder">三尺美术馆</view><view class="archive-title">{{item.title}}</view><view class="muted">{{item.endDate}}</view></view><view wx:if="{{!past.length}}" class="muted">过往展览将展示在这里</view></view></scroll-view>
+  <view class="contact"><view class="eyebrow">VISIT US</view><view class="h2">来馆参观</view><view class="contact-line">{{settings.contactName || '三尺美术馆'}}</view><view class="muted">{{settings.openingHours || '开放时间待公布'}}</view><view class="muted">{{settings.contactAddress || '地址待公布'}}</view><view class="contact-line" wx:if="{{settings.contactPhone}}" bindtap="phone">{{settings.contactPhone}} ↗</view></view>
+</view>

@@ -1,0 +1,1 @@
+.form { padding: 32rpx; margin: 48rpx 0; }.label { font-size: 26rpx; font-weight: 600; margin-bottom: 18rpx; }.form input { height: 78rpx; border-bottom: 1rpx solid #e4ded5; margin-bottom: 35rpx; font-size: 29rpx; }.phone-button { background: #f1ede8; color: #705a43; font-size: 25rpx; margin: 10rpx 0; }

@@ -1,0 +1,1 @@
+.shop { text-align: center; padding-top: 140rpx; }.art { width: 320rpx; height: 320rpx; margin: 60rpx auto; border: 2rpx solid #b4a38e; color: #9d8a75; border-radius: 50%; line-height: 315rpx; font-family: serif; font-size: 140rpx; }.shop .h1 { margin-bottom: 20rpx; }

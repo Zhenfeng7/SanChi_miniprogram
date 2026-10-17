@@ -1,0 +1,1 @@
+.booking { padding: 30rpx; }.top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25rpx; }.title { font-weight: 600; font-size: 31rpx; flex: 1; }.booking .muted { margin: 8rpx 0; }.cancel { color: #90684e; text-align: right; border-top: 1rpx solid #e9e4de; padding-top: 23rpx; margin-top: 25rpx; font-size: 25rpx; }
