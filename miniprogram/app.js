@@ -7,5 +7,12 @@ App({
       return;
     }
     wx.cloud.init(config.cloudEnvId ? { env: config.cloudEnvId, traceUser: true } : { traceUser: true });
+  },
+  onError(error) {
+    wx.showModal({ title: '页面加载失败', content: String(error).slice(0, 180), showCancel: false });
+  },
+  onUnhandledRejection(event) {
+    const reason = event && event.reason;
+    wx.showModal({ title: '页面加载失败', content: String(reason && reason.message || reason || '未知错误').slice(0, 180), showCancel: false });
   }
 });

@@ -1,5 +1,6 @@
 <view class="page home">
   <view wx:if="{{demoMode}}" class="demo-note">占位演示 · 真实预约需启用云开发</view>
+  <view wx:if="{{error}}" class="empty">页面加载失败：{{error}}</view>
   <view class="brand"><view class="brand-cn">三尺美术馆</view><view class="brand-en">SAN CHI ART MUSEUM</view></view>
   <swiper class="hero" indicator-dots autoplay circular interval="5000">
     <swiper-item wx:for="{{banners}}" wx:key="*this"><view class="hero-placeholder hero-{{item}}"><view class="hero-shape"></view><view class="hero-caption">艺术，在此发生<text>ART LIVES HERE</text></view></view></swiper-item>
