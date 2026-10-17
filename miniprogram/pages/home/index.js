@@ -1,6 +1,7 @@
 const { call, message } = require('../../utils/api');
+const config = require('../../config');
 Page({
-  data: { current: [], past: [], banners: [1, 2, 3], settings: {}, loading: true },
+  data: { current: [], past: [], banners: [1, 2, 3], settings: {}, loading: true, demoMode: config.demoMode },
   onShow() { this.load(); },
   async load() {
     try {

@@ -1,4 +1,7 @@
+const config = require('../config');
+const demo = require('./demo');
 function call(action, data = {}) {
+  if (config.demoMode) return demo.call(action, data);
   return wx.cloud.callFunction({ name: 'gallery', data: { action, ...data } }).then(({ result }) => {
     if (!result || !result.ok) throw new Error((result && result.error) || '服务暂不可用');
     return result.data;
