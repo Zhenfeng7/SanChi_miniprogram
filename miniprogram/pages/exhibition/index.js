@@ -20,12 +20,13 @@ Page({
     } catch (e) { message(e); }
   },
   async loadSlots() {
-    try { const slots = await call('availability', { exhibitionId: this.id, date: this.data.date }); this.setData({ slots, time: '' }); }
+    try { const slots = await call('availability', { exhibitionId: this.id, date: this.data.date }); this.setData({ slots: this.decorateSlots(slots, this.data.people), time: '' }); }
     catch (e) { message(e); }
   },
+  decorateSlots(slots, people) { return slots.map(x => ({ ...x, insufficient: x.remaining < people, label: x.remaining < people ? '已满或名额不足' : `剩余${x.remaining}位` })); },
   chooseDate(e) { this.setData({ date: e.currentTarget.dataset.date }); this.loadSlots(); },
   pickDate(e) { this.setData({ date: e.detail.value }); this.loadSlots(); },
-  choosePeople(e) { this.setData({ people: Number(e.currentTarget.dataset.people), time: '' }); },
+  choosePeople(e) { const people = Number(e.currentTarget.dataset.people); this.setData({ people, slots: this.decorateSlots(this.data.slots, people), time: '' }); },
   chooseTime(e) { const x = this.data.slots.find(s => s.time === e.currentTarget.dataset.time); if (x && x.remaining >= this.data.people) this.setData({ time: x.time }); },
   async reserve() {
     if (this.data.busy || !this.data.time) return;

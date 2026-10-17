@@ -7,5 +7,5 @@
     { "pagePath": "pages/shop/index", "text": "商城", "iconPath": "images/icons/goods.png", "selectedIconPath": "images/icons/goods-active.png" },
     { "pagePath": "pages/me/index", "text": "我的", "iconPath": "images/icons/usercenter.png", "selectedIconPath": "images/icons/usercenter-active.png" }
   ] },
-  "sitemapLocation": "sitemap.json", "style": "v2"
+  "sitemapLocation": "sitemap.json", "style": "v2", "lazyCodeLoading": "requiredComponents"
 }

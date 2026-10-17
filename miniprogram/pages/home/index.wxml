@@ -5,7 +5,7 @@
     <swiper-item wx:for="{{banners}}" wx:key="*this"><view class="hero-placeholder hero-{{item}}"><view class="hero-shape"></view><view class="hero-caption">艺术，在此发生<text>ART LIVES HERE</text></view></view></swiper-item>
   </swiper>
   <view class="section-heading"><view><view class="eyebrow">ON VIEW</view><view class="h2">正在展出</view></view><text class="section-rule"></text></view>
-  <view wx:if="{{!current.length &amp;&amp; !loading}}" class="empty card">展览即将揭晓，敬请期待</view>
+  <view wx:if="{{!current.length}}" class="empty card">展览即将揭晓，敬请期待</view>
   <view class="card exhibit-card" wx:for="{{current}}" wx:key="_id" data-id="{{item._id}}" bindtap="detail">
     <image wx:if="{{item.coverImage}}" class="cover" src="{{item.coverImage}}" mode="aspectFill" />
     <view wx:else class="cover placeholder"><text>三尺 · 展览</text></view>
