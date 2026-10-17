@@ -6,9 +6,8 @@ Page({
   onLoad(options) { this.id = options.id; this.load(); },
   async load() {
     try {
-      const results = await Promise.all([call('exhibition', { id: this.id }), call('settings')]);
-      const exhibit = results[0];
-      const config = results[1];
+      const exhibit = await call('exhibition', { id: this.id });
+      const config = await call('settings');
       const today = chinaToday();
       const advanceDays = Number.isInteger(Number(config.advanceDays)) && Number(config.advanceDays) >= 0 ? Number(config.advanceDays) : 1;
       const peopleLimit = Number.isInteger(Number(config.maxPeople)) && Number(config.maxPeople) >= 1 ? Number(config.maxPeople) : 4;
