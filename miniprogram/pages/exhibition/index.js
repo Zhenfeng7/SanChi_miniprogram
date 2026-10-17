@@ -6,7 +6,9 @@ Page({
   onLoad(options) { this.id = options.id; this.load(); },
   async load() {
     try {
-      const [exhibit, config] = await Promise.all([call('exhibition', { id: this.id }), call('settings')]);
+      const results = await Promise.all([call('exhibition', { id: this.id }), call('settings')]);
+      const exhibit = results[0];
+      const config = results[1];
       const today = chinaToday();
       const advanceDays = Number.isInteger(Number(config.advanceDays)) && Number(config.advanceDays) >= 0 ? Number(config.advanceDays) : 1;
       const peopleLimit = Number.isInteger(Number(config.maxPeople)) && Number(config.maxPeople) >= 1 ? Number(config.maxPeople) : 4;
@@ -23,7 +25,7 @@ Page({
     try { const slots = await call('availability', { exhibitionId: this.id, date: this.data.date }); this.setData({ slots: this.decorateSlots(slots, this.data.people), time: '' }); }
     catch (e) { message(e); }
   },
-  decorateSlots(slots, people) { return slots.map(x => ({ ...x, insufficient: x.remaining < people, label: x.remaining < people ? '已满或名额不足' : `剩余${x.remaining}位` })); },
+  decorateSlots(slots, people) { return slots.map(x => ({ time: x.time, capacity: x.capacity, remaining: x.remaining, insufficient: x.remaining < people, label: x.remaining < people ? '已满或名额不足' : `剩余${x.remaining}位` })); },
   chooseDate(e) { this.setData({ date: e.currentTarget.dataset.date }); this.loadSlots(); },
   pickDate(e) { this.setData({ date: e.detail.value }); this.loadSlots(); },
   choosePeople(e) { const people = Number(e.currentTarget.dataset.people); this.setData({ people, slots: this.decorateSlots(this.data.slots, people), time: '' }); },

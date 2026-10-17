@@ -13,7 +13,7 @@ async function call(action, data) {
     case 'home': return { exhibitions: sample(), settings };
     case 'settings': return settings;
     case 'exhibition': return sample().find(x => x._id === data.id);
-    case 'availability': return sample()[0].dailySlots.map(x => ({ ...x, remaining: x.capacity }));
+    case 'availability': return sample()[0].dailySlots.map(x => ({ time: x.time, capacity: x.capacity, remaining: x.capacity }));
     case 'profile': return wx.getStorageSync('demoProfile') || { name: '', phone: '' };
     case 'saveProfile': { const p = { name: data.name.trim(), phone: data.phone.trim() }; wx.setStorageSync('demoProfile', p); return p; }
     case 'myBookings': return [];
