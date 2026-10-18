@@ -48,7 +48,7 @@
 ## 3. 预约与用户数据
 
 - `bookings`：每条预约含 `exhibitionId`、`exhibitionTitle`、`date`、`time`、`people`、`name`、`phone`、`status`（`active` / `cancelled`）、`openid`、创建/更新时间。用户取消后记录保留，状态改为 `cancelled`。
-- `users`：以 OPENID 为 `_id` 保存用户姓名、微信授权手机号及 `phoneVerified` 状态。用户可在“我的信息”修改姓名；手机号只能经微信授权后由云函数更新。
+- `users`：以 OPENID 为 `_id` 保存用户昵称（字段名仍为 `name`）、微信授权手机号及 `phoneVerified` 状态。用户可在“我的信息”修改昵称；手机号只能经微信授权后由云函数更新。
 - `slots`：以展览 ID、日期、时段组成 `_id`，`reserved` 为当前已占人数。
 - `bookingGuards`：以用户 OPENID、展览 ID、日期组成 `_id`，防止同一展览同日重复预约。
 
@@ -58,5 +58,5 @@
 
 1. 上传部署 `gallery` 云函数并确认环境 ID。
 2. 录入真实展览、馆方联系方式和开放时段。
-3. 用两名微信用户测试：填写姓名、授权微信手机号、预约、重复预约、名额满、取消、重新预约，并在控制台核对 `users`、`bookings` 和 `slots`。旧版手动填写的手机号需重新授权。
+3. 用两名微信用户测试：填写昵称、授权微信手机号、预约、重复预约、名额满、取消、重新预约，并在控制台核对 `users`、`bookings` 和 `slots`。旧版手动填写的手机号需重新授权。
 4. 按微信小程序平台要求配置隐私说明与手机号授权说明，再提交微信审核发布。

@@ -33,7 +33,7 @@ async function profile(openid) {
 }
 async function saveProfile(openid, event) {
   const name = String(event.name || '').trim();
-  if (name.length < 2 || name.length > 40) throw Error('请填写2至40字的姓名');
+  if (name.length < 1 || name.length > 40) throw Error('请填写1至40字的昵称');
   const old = await getDoc('users', openid);
   const data = { name, updatedAt: db.serverDate() };
   if (old) await db.collection('users').doc(openid).update({ data });
@@ -78,7 +78,7 @@ async function reserve(openid, event) {
   if (!Number.isInteger(people) || people < 1 || people > peopleLimit) throw Error(`每次最多预约${peopleLimit}人`);
   if (event.date < tomorrowOffset(nonnegativeDays(config.advanceDays))) throw Error('请至少提前预约');
   const user = await getDoc('users', openid);
-  if (!user || !user.name || !user.phone || user.phoneVerified !== true) throw Error('请先填写姓名并授权微信手机号');
+  if (!user || !user.name || !user.phone || user.phoneVerified !== true) throw Error('请先填写昵称并授权微信手机号');
   const guardId = `${openid}_${exhibit._id}_${event.date}`;
   const slotId = `${exhibit._id}_${event.date}_${event.time.replace(':', '')}`;
   const bookingId = `${guardId}_${Date.now()}`;
