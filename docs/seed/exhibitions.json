@@ -1,0 +1,2 @@
+{"_id":"placeholder-current","title":"当前展览｜内容待更新","description":"这里将展示三尺美术馆当前展览的介绍。馆方确认真实信息后，请在云开发控制台更新本条记录。此展览及预约时段仅供功能测试。","startDate":"2026-10-01","endDate":"2026-12-31","coverImage":"","published":true,"dailySlots":[{"time":"10:00","capacity":12},{"time":"11:00","capacity":12},{"time":"14:00","capacity":12},{"time":"15:00","capacity":12}]}
+{"_id":"placeholder-past","title":"过往展览｜内容待更新","description":"这里将展示已结束展览的资料，仅供浏览。","startDate":"2026-08-01","endDate":"2026-09-30","coverImage":"","published":true,"dailySlots":[]}

@@ -2,15 +2,15 @@
 
 四个导航页：主页、预约、商城、我的。主页展示轮播占位画面、当前/过往展览与联系信息；预约页按展览选择日期、人数和 1 小时时段；“我的”提供个人信息与预约记录。商城暂显示筹备中。
 
-项目使用微信云开发。**当前默认是免费预览用的占位演示模式：展览、日期、联系方式可浏览，个人信息只存于本机，确认预约不会生成记录。**正式预约需要创建云开发环境、部署云函数和录入展览内容。
+项目使用微信云开发，当前连接 `cloud1-d1gdj95dne76b8cf6`，调用已部署的 `gallery` 云函数。数据库目前有占位展览和测试预约时段；它们不代表真实展览或开放时间，馆方确认内容后需在云开发控制台更新。
 
 ## 开始使用
 
 1. 用微信开发者工具打开项目根目录，确认 AppID 与实际小程序一致，开通云开发环境。
-2. 创建云开发环境后，在 `miniprogram/config.js` 中把 `demoMode` 改为 `false`，并填写 `cloudEnvId`。若当前环境是小程序的默认环境，`cloudEnvId` 可留空。
+2. `miniprogram/config.js` 已将 `demoMode` 设为 `false`，并填写云环境 ID。若另建环境，需要相应修改 `cloudEnvId`。
 3. 在云开发控制台的数据库创建 `exhibitions`、`settings`、`users`、`bookings`、`slots`、`bookingGuards` 六个集合。**客户端权限设为不可读写**；所有访问通过 `gallery` 云函数。云函数拥有服务端数据库权限。
 4. 右键 `cloudfunctions/gallery`，选择“上传并部署：云端安装依赖”。
-5. 按 [云端内容与管理说明](docs/cloud-admin.md) 填写 `settings/main` 和展览记录，随后在开发者工具预览。
+5. 当前占位数据的导入文件位于 [docs/seed/settings.json](docs/seed/settings.json) 和 [docs/seed/exhibitions.json](docs/seed/exhibitions.json)。按 [云端内容与管理说明](docs/cloud-admin.md) 将其替换为正式资料，随后在开发者工具预览。
 
 ## 预约规则
 

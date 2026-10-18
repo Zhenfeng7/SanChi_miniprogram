@@ -2,7 +2,7 @@
 
 在微信开发者工具右上角打开“云开发 → 数据库”。创建以下六个集合，并将**客户端权限设置为不可读写**。小程序只调用 `gallery` 云函数，云函数用微信 OPENID 识别用户。请勿开放 `users`、`bookings` 集合的客户端直接读取权限。
 
-目前 `miniprogram/config.js` 默认启用占位演示。建立环境、部署函数、创建集合后，将 `demoMode` 改为 `false`，需要时填写 `cloudEnvId`。
+当前 `miniprogram/config.js` 已连接云环境并关闭演示模式。`settings` 与 `exhibitions` 中的占位记录来自 `docs/seed/`，仅用于功能测试；请在正式开放预约前更新真实内容。
 
 ## 1. 馆方设置 `settings`
 
