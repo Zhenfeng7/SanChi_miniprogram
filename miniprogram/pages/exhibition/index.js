@@ -56,8 +56,8 @@ Page({
     this.setData({ busy: true });
     try {
       const profile = await call('profile');
-      if (!profile.name || !profile.phone) {
-        wx.showModal({ title: '完善预约信息', content: '预约前需填写姓名和手机号。', success: r => { if (r.confirm) wx.navigateTo({ url: '/pages/profile/index' }); } });
+      if (!profile.name || !profile.phoneVerified) {
+        wx.showModal({ title: '完善预约信息', content: '预约前需填写姓名并授权微信手机号。', success: r => { if (r.confirm) wx.navigateTo({ url: '/pages/profile/index' }); } });
         return;
       }
       await call('reserve', { exhibitionId: this.id, date: this.data.date, time: this.data.time, people: this.data.people });

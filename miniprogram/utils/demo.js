@@ -14,8 +14,8 @@ async function call(action, data) {
     case 'settings': return settings;
     case 'exhibition': return sample().find(x => x._id === data.id);
     case 'availability': return sample()[0].dailySlots.map(x => ({ time: x.time, capacity: x.capacity, remaining: x.capacity }));
-    case 'profile': return wx.getStorageSync('demoProfile') || { name: '', phone: '' };
-    case 'saveProfile': { const p = { name: data.name.trim(), phone: data.phone.trim() }; wx.setStorageSync('demoProfile', p); return p; }
+    case 'profile': return wx.getStorageSync('demoProfile') || { name: '', phone: '', phoneVerified: false };
+    case 'saveProfile': { const p = { name: data.name.trim(), phone: '', phoneVerified: false }; wx.setStorageSync('demoProfile', p); return p; }
     case 'myBookings': return [];
     case 'reserve': throw Error('当前为占位演示；启用云开发后才能保存真实预约');
     case 'wechatPhone': throw Error('手机号快捷授权需启用云开发环境');

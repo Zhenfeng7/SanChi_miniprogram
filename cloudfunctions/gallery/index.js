@@ -28,25 +28,28 @@ async function listExhibitions() {
 }
 async function profile(openid) {
   const user = await getDoc('users', openid);
-  return user ? { name: user.name || '', phone: user.phone || '', createdAt: user.createdAt } : { name: '', phone: '' };
+  const phoneVerified = !!(user && user.phoneVerified && user.phone);
+  return user ? { name: user.name || '', phone: phoneVerified ? user.phone : '', phoneVerified, createdAt: user.createdAt } : { name: '', phone: '', phoneVerified: false };
 }
 async function saveProfile(openid, event) {
   const name = String(event.name || '').trim();
-  const phone = String(event.phone || '').trim();
   if (name.length < 2 || name.length > 40) throw Error('请填写2至40字的姓名');
-  if (!/^\+?[0-9]{6,20}$/.test(phone)) throw Error('请填写有效手机号（仅数字，可含国际区号）');
   const old = await getDoc('users', openid);
-  const data = { name, phone, updatedAt: db.serverDate() };
+  const data = { name, updatedAt: db.serverDate() };
   if (old) await db.collection('users').doc(openid).update({ data });
   else await db.collection('users').add({ data: { _id: openid, ...data, createdAt: db.serverDate() } });
-  return { name, phone };
+  return { name };
 }
 async function phoneFromWechat(openid, code) {
   if (!code) throw Error('未获得手机号授权');
   const result = await cloud.openapi.phonenumber.getPhoneNumber({ code });
   const phone = result.phoneInfo && result.phoneInfo.purePhoneNumber;
   if (!phone) throw Error('获取手机号失败');
-  return { phone };
+  const old = await getDoc('users', openid);
+  const data = { phone, phoneVerified: true, phoneVerifiedAt: db.serverDate(), updatedAt: db.serverDate() };
+  if (old) await db.collection('users').doc(openid).update({ data });
+  else await db.collection('users').add({ data: { _id: openid, ...data, createdAt: db.serverDate() } });
+  return { phone, phoneVerified: true };
 }
 function slotInfo(exhibit, date, time) {
   if (!validDate(date) || date < exhibit.startDate || date > exhibit.endDate) throw Error('预约日期不在可预约范围');
@@ -75,7 +78,7 @@ async function reserve(openid, event) {
   if (!Number.isInteger(people) || people < 1 || people > peopleLimit) throw Error(`每次最多预约${peopleLimit}人`);
   if (event.date < tomorrowOffset(nonnegativeDays(config.advanceDays))) throw Error('请至少提前预约');
   const user = await getDoc('users', openid);
-  if (!user || !user.name || !user.phone) throw Error('请先完善姓名和手机号');
+  if (!user || !user.name || !user.phone || user.phoneVerified !== true) throw Error('请先填写姓名并授权微信手机号');
   const guardId = `${openid}_${exhibit._id}_${event.date}`;
   const slotId = `${exhibit._id}_${event.date}_${event.time.replace(':', '')}`;
   const bookingId = `${guardId}_${Date.now()}`;
