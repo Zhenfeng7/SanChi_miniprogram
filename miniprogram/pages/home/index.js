@@ -2,7 +2,7 @@ const { call, message } = require('../../utils/api');
 const config = require('../../config');
 Page({
   data: { current: [], past: [], banners: [1, 2, 3], settings: {}, loading: true, error: '', demoMode: config.demoMode },
-  onShow() { this.load(); },
+  onShow() { if (this.getTabBar()) this.getTabBar().setData({ selected: 0 }); this.load(); },
   async load() {
     try {
       const data = await call('home');
