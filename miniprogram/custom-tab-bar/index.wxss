@@ -1,5 +1,5 @@
-.tab-bar { display: flex; height: 136rpx; background: #fff; border-top: 1rpx solid #dedbd6; padding-bottom: env(safe-area-inset-bottom); }
-.tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.icon { width: 82rpx; height: 82rpx; }
-.label { margin-top: 5rpx; color: #77736d; font-size: 25rpx; line-height: 1.2; }
+.tab-bar { display: flex; padding: 14rpx 0 env(safe-area-inset-bottom); background: #fff; border-top: 1rpx solid #dedbd6; }
+.tab { flex: 1; height: 136rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.icon { width: 76rpx; height: 76rpx; flex-shrink: 0; }
+.label { margin-top: 8rpx; color: #77736d; font-size: 25rpx; line-height: 1.2; }
 .label.active { color: #735d45; }
