@@ -1,15 +1,18 @@
 const { call, message } = require('../../utils/api');
+const { beijingDate, groupBookings } = require('../../utils/admin-booking-groups');
 function blank() { return { id: '', exhibitionId: '', date: '', time: '', people: 1, name: '', phone: '' }; }
 Page({
-  data: { bookings: [], exhibitions: [], mode: 'list', form: blank(), exhibitionName: '', phoneLocked: false, timeOptions: [], saving: false, activeOnly: true },
+  data: { bookings: [], todayBookings: [], futureBookings: [], pastWeekBookings: [], today: beijingDate(), showAll: false, futureExpanded: false, exhibitions: [], mode: 'list', form: blank(), exhibitionName: '', phoneLocked: false, timeOptions: [], saving: false },
   onShow() { this.load(); },
   async load() {
     try {
       const [bookings, exhibitions] = await Promise.all([call('adminBookings'), call('adminExhibitions')]);
-      this.setData({ bookings, exhibitions: exhibitions.filter(x => x.published && x.phase !== 'past') });
+      const today = beijingDate();
+      this.setData({ bookings, today, ...groupBookings(bookings, today, this.data.showAll), exhibitions: exhibitions.filter(x => x.published && x.phase !== 'past') });
     } catch (e) { message(e); }
   },
-  toggleFilter() { this.setData({ activeOnly: !this.data.activeOnly }); },
+  toggleAll() { const showAll = !this.data.showAll; const today = beijingDate(); this.setData({ showAll, today, futureExpanded: showAll, ...groupBookings(this.data.bookings, today, showAll) }); },
+  toggleFuture() { this.setData({ futureExpanded: !this.data.futureExpanded }); },
   newBooking() { this.setData({ mode: 'new', form: blank(), exhibitionName: '', phoneLocked: false, timeOptions: [] }); },
   edit(e) {
     const b = this.data.bookings.find(x => x._id === e.currentTarget.dataset.id);
