@@ -8,7 +8,7 @@
 
 1. 用微信开发者工具打开项目根目录，确认 AppID 与实际小程序一致，开通云开发环境。
 2. `miniprogram/config.js` 已将 `demoMode` 设为 `false`，并填写云环境 ID。若另建环境，需要相应修改 `cloudEnvId`。
-3. 在云开发控制台的数据库创建 `exhibitions`、`settings`、`users`、`bookings`、`slots`、`bookingGuards` 六个集合。**客户端权限设为不可读写**；所有访问通过 `gallery` 云函数。云函数拥有服务端数据库权限。
+3. 在云开发控制台的数据库创建 `exhibitions`、`settings`、`users`、`bookings`、`slots`、`bookingGuards` 六个集合。**客户端权限设为不可读写**；所有访问通过 `gallery` 云函数。云函数拥有服务端数据库权限。首次管理员绑定见 [馆方管理使用说明](docs/cloud-admin.md)。
 4. 右键 `cloudfunctions/gallery`，选择“上传并部署：云端安装依赖”。
 5. 当前占位数据的导入文件位于 [docs/seed/settings.json](docs/seed/settings.json) 和 [docs/seed/exhibitions.json](docs/seed/exhibitions.json)。按 [云端内容与管理说明](docs/cloud-admin.md) 将其替换为正式资料，随后在开发者工具预览。
 
