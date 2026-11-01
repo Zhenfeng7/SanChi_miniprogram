@@ -1,7 +1,7 @@
 <view wx:if="{{exhibit}}" class="detail">
   <swiper wx:if="{{exhibit.galleryImages.length > 1}}" class="hero" indicator-dots indicator-color="rgba(255,255,255,.55)" indicator-active-color="#ffffff" circular><swiper-item wx:for="{{exhibit.galleryImages}}" wx:key="*this"><image class="hero-image" src="{{item}}" mode="aspectFill" /></swiper-item></swiper>
   <image wx:elif="{{exhibit.coverImage}}" class="hero" src="{{exhibit.coverImage}}" mode="aspectFill" /><view wx:else class="hero placeholder">SAN CHI ART</view>
-  <view wx:if="{{exhibit.testPhotos}}" class="photo-note">测试图片 · 馆舍照片，仅用于页面演示</view>
+  <view wx:if="{{exhibit.testPhotos}}" class="photo-note">测试展览图片 · 仅用于页面演示</view>
   <view class="page"><view class="eyebrow">EXHIBITION</view><view class="h1">{{exhibit.title}}</view><view class="date-range">{{exhibit.startDate}} — {{exhibit.endDate}}</view><view class="description">{{exhibit.description || '展览介绍即将发布。'}}</view>
     <view wx:if="{{past}}" class="past-note">展览已结束 · 仅供浏览</view>
     <view wx:elif="{{canBook}}" class="booking-panel"><view class="h2">预约参观</view><view class="muted">每个时段 1 小时 · 提前 {{config.advanceDays}} 天开放 · 同一展览每天限约一次</view>

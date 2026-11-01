@@ -1,8 +1,5 @@
 const testImages = [
-  '/images/exhibitions/test-05.jpg',
-  '/images/exhibitions/test-06.jpg',
-  '/images/exhibitions/test-07.jpg',
-  '/images/exhibitions/test-09.jpg'
+  '/images/exhibitions/test-exhibition.jpg'
 ];
 
 function withImages(exhibit) {
