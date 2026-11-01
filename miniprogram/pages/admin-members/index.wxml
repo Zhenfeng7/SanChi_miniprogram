@@ -1,8 +1,8 @@
 <view class="page members-page">
   <view class="eyebrow">GALLERY TEAM</view><view class="h1">管理员账号</view>
-  <view class="muted intro">馆方人员先用自己的微信打开小程序，在「我的信息」授权手机号。之后在这里按手机号查找并添加。</view>
+  <view class="muted intro">馆方人员先用自己的微信打开小程序，在「我的信息」授权手机号。添加后，可单独授予“账号管理”权限；被授权者也能继续授权其他管理员。首位管理员账号始终保留。</view>
   <view class="h2">现有管理员</view>
-  <view class="card member" wx:for="{{members}}" wx:key="openid"><view class="person"><view class="name">{{item.name}} <text wx:if="{{item.isOwner}}" class="owner">首位管理员</text></view><view class="muted">{{item.phone}}</view></view><button wx:if="{{!item.isOwner}}" class="remove" data-id="{{item.openid}}" bindtap="remove" disabled="{{busy}}">移除</button></view>
+  <view class="card member" wx:for="{{members}}" wx:key="openid"><view class="person"><view class="name">{{item.name}} <text wx:if="{{item.isOwner}}" class="owner">首位管理员</text><text wx:elif="{{item.canManageAdmins}}" class="owner">账号管理员</text></view><view class="muted">{{item.phone}}</view></view><view wx:if="{{!item.isOwner && item.openid !== viewerOpenid}}" class="member-actions"><button class="permission" data-id="{{item.openid}}" bindtap="setAccountManager" disabled="{{busy}}">{{item.canManageAdmins ? '收回账号管理' : '授予账号管理'}}</button><button class="remove" data-id="{{item.openid}}" bindtap="remove" disabled="{{busy}}">移除管理员</button></view></view>
   <view class="h2">添加管理员</view>
   <view class="card panel"><view class="label">已验证的手机号</view><input type="number" maxlength="11" value="{{phone}}" bindinput="phoneInput" placeholder="请输入对方授权的手机号" /><button class="secondary" bindtap="lookup" loading="{{busy}}">查找微信账号</button>
     <view wx:if="{{candidate}}" class="candidate"><view class="name">{{candidate.name}}</view><view class="muted">{{candidate.phone}}</view><button class="btn" bindtap="add" disabled="{{busy}}">添加为管理员</button></view>

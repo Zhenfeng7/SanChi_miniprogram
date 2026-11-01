@@ -13,7 +13,7 @@ function tomorrowOffset(days) { return chinaDate(Date.now() + days * DAY); }
 function nonnegativeDays(value) { const n = Number(value); return Number.isInteger(n) && n >= 0 ? n : 1; }
 function maxPeople(value) { const n = Number(value); return Number.isInteger(n) && n >= 1 ? n : 4; }
 async function settings() {
-  try { const x = await db.collection('settings').doc('main').get(); const { adminOpenid, adminOpenids, adminOwnerOpenid, ...publicSettings } = x.data; return { ...defaults, ...publicSettings }; }
+  try { const x = await db.collection('settings').doc('main').get(); const { adminOpenid, adminOpenids, adminOwnerOpenid, adminManagerOpenids, ...publicSettings } = x.data; return { ...defaults, ...publicSettings }; }
   catch (_) { return defaults; }
 }
 async function getDoc(name, id) {
@@ -128,25 +128,31 @@ function phase(x) {
 function adminIds(config) {
   return [...new Set([config && config.adminOwnerOpenid, config && config.adminOpenid, ...(config && Array.isArray(config.adminOpenids) ? config.adminOpenids : [])].filter(x => typeof x === 'string' && x))];
 }
+function ownerId(config) { return config && (config.adminOwnerOpenid || config.adminOpenid); }
+function accountManagerIds(config) {
+  const admins = adminIds(config);
+  return [...new Set([ownerId(config), ...(config && Array.isArray(config.adminManagerOpenids) ? config.adminManagerOpenids : [])].filter(id => admins.includes(id)))];
+}
 async function requireAdmin(openid) {
   const config = await getDoc('settings', 'main');
   if (!adminIds(config).includes(openid)) throw Error('没有馆方管理权限');
 }
-async function requireOwner(openid) {
+async function requireAccountManager(openid) {
   const config = await getDoc('settings', 'main');
-  if (!config || (config.adminOwnerOpenid || config.adminOpenid) !== openid) throw Error('只有首位管理员可管理账号');
+  if (!accountManagerIds(config).includes(openid)) throw Error('没有管理员账号管理权限');
   return config;
 }
 async function adminMembers(openid) {
-  const config = await requireOwner(openid);
-  const ownerId = config.adminOwnerOpenid || config.adminOpenid;
+  const config = await requireAccountManager(openid);
+  const owner = ownerId(config);
+  const managers = accountManagerIds(config);
   return Promise.all(adminIds(config).map(async id => {
     const user = await getDoc('users', id);
-    return { openid: id, name: user && user.name || '未设置昵称', phone: user && user.phoneVerified ? user.phone : '', isOwner: id === ownerId };
+    return { openid: id, name: user && user.name || '未设置昵称', phone: user && user.phoneVerified ? user.phone : '', isOwner: id === owner, canManageAdmins: managers.includes(id) };
   }));
 }
 async function adminLookupUser(openid, phone) {
-  await requireOwner(openid);
+  await requireAccountManager(openid);
   const targetPhone = cleanText(phone, '手机号', 30, true);
   if (!/^1\d{10}$/.test(targetPhone)) throw Error('请输入已验证的11位手机号');
   const matches = (await db.collection('users').where({ phone: targetPhone, phoneVerified: true }).limit(2).get()).data;
@@ -154,19 +160,36 @@ async function adminLookupUser(openid, phone) {
   return { openid: matches[0]._id, name: matches[0].name || '未设置昵称', phone: targetPhone };
 }
 async function adminSetMember(openid, target, enabled) {
-  await requireOwner(openid);
+  await requireAccountManager(openid);
   const targetId = cleanText(target, '账号标识', 100, true);
-  if (targetId === openid) throw Error('不能移除或修改首位管理员');
+  if (targetId === openid) throw Error('不能修改自己的管理员账号');
   if (enabled) {
     const user = await getDoc('users', targetId);
     if (!user || !user.phoneVerified || !user.phone) throw Error('对方需先在小程序授权手机号');
   }
   await db.runTransaction(async tx => {
     const doc = (await tx.collection('settings').doc('main').get()).data;
-    if ((doc.adminOwnerOpenid || doc.adminOpenid) !== openid) throw Error('只有首位管理员可管理账号');
+    if (!accountManagerIds(doc).includes(openid)) throw Error('没有管理员账号管理权限');
+    if (targetId === ownerId(doc)) throw Error('不能修改首位管理员');
     const ids = adminIds(doc).filter(id => id !== targetId);
     if (enabled) ids.push(targetId);
-    await tx.collection('settings').doc('main').update({ data: { adminOwnerOpenid: openid, adminOpenids: ids, updatedAt: db.serverDate() } });
+    const managers = enabled ? accountManagerIds(doc) : accountManagerIds(doc).filter(id => id !== targetId);
+    await tx.collection('settings').doc('main').update({ data: { adminOwnerOpenid: ownerId(doc), adminOpenids: ids, adminManagerOpenids: managers, updatedAt: db.serverDate() } });
+  });
+  return true;
+}
+async function adminSetAccountManager(openid, target, enabled) {
+  await requireAccountManager(openid);
+  const targetId = cleanText(target, '账号标识', 100, true);
+  if (targetId === openid) throw Error('不能修改自己的账号管理权限');
+  await db.runTransaction(async tx => {
+    const doc = (await tx.collection('settings').doc('main').get()).data;
+    if (!accountManagerIds(doc).includes(openid)) throw Error('没有管理员账号管理权限');
+    if (targetId === ownerId(doc)) throw Error('不能修改首位管理员');
+    if (!adminIds(doc).includes(targetId)) throw Error('请先添加为管理员');
+    const managers = accountManagerIds(doc).filter(id => id !== targetId);
+    if (enabled) managers.push(targetId);
+    await tx.collection('settings').doc('main').update({ data: { adminManagerOpenids: managers, updatedAt: db.serverDate() } });
   });
   return true;
 }
@@ -365,10 +388,11 @@ exports.main = async (event = {}) => {
       case 'reserve': data = await reserve(openid, event); break;
       case 'myBookings': data = (await db.collection('bookings').where({ openid }).orderBy('createdAt', 'desc').limit(100).get()).data; break;
       case 'cancel': data = await cancel(openid, event.id); break;
-      case 'adminStatus': { const config = await getDoc('settings', 'main'); data = { openid, isAdmin: adminIds(config).includes(openid), isOwner: !!config && (config.adminOwnerOpenid || config.adminOpenid) === openid }; break; }
+      case 'adminStatus': { const config = await getDoc('settings', 'main'); data = { openid, isAdmin: adminIds(config).includes(openid), isOwner: ownerId(config) === openid, canManageAdmins: accountManagerIds(config).includes(openid) }; break; }
       case 'adminMembers': data = await adminMembers(openid); break;
       case 'adminLookupUser': data = await adminLookupUser(openid, event.phone); break;
       case 'adminSetMember': data = await adminSetMember(openid, event.openid, event.enabled === true); break;
+      case 'adminSetAccountManager': data = await adminSetAccountManager(openid, event.openid, event.enabled === true); break;
       case 'adminExhibitions': await requireAdmin(openid); data = (await allCollection('exhibitions', {})).map(x => ({ ...x, phase: phase(x) })).sort((a, b) => b.startDate.localeCompare(a.startDate)); break;
       case 'adminSaveExhibition': await requireAdmin(openid); data = await adminSaveExhibition(event); break;
       case 'adminDeleteExhibition': await requireAdmin(openid); data = await adminDeleteExhibition(event.id); break;
