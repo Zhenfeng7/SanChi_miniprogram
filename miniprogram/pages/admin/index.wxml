@@ -4,6 +4,7 @@
   <view wx:else>
     <view class="summary card" bindtap="bookings"><view><view class="eyebrow">RESERVATIONS</view><view class="summary-title">预约管理</view><view class="muted">查看、代客预约与取消</view></view><view class="summary-count">{{activeBookings}}<text>条有效预约</text></view></view>
     <view class="summary card" bindtap="settings"><view><view class="eyebrow">MUSEUM</view><view class="summary-title">馆方资料与首页轮播</view><view class="muted">联系方式、预约规则与照片</view></view><view class="chevron">›</view></view>
+    <view wx:if="{{isOwner}}" class="summary card" bindtap="members"><view><view class="eyebrow">TEAM</view><view class="summary-title">管理员账号</view><view class="muted">添加或移除馆方人员</view></view><view class="chevron">›</view></view>
     <view class="section-row"><view class="h2">展览管理</view><button class="mini-btn" bindtap="newExhibition">＋ 新建展览</button></view>
     <view wx:if="{{!exhibitions.length}}" class="card empty">还没有展览，点击“新建展览”开始。</view>
     <view class="card exhibition" wx:for="{{exhibitions}}" wx:key="_id" data-id="{{item._id}}" bindtap="editExhibition"><image wx:if="{{item.coverImage}}" src="{{item.coverImage}}" mode="aspectFill" /><view wx:else class="placeholder">展览</view><view class="exhibition-text"><view class="exhibition-title">{{item.title}}</view><view class="muted">{{item.startDate}} — {{item.endDate}}</view><view class="pill">{{item.published ? '已发布' : '未发布'}}</view></view><view class="chevron">›</view></view>

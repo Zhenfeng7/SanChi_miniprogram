@@ -13,7 +13,7 @@ function tomorrowOffset(days) { return chinaDate(Date.now() + days * DAY); }
 function nonnegativeDays(value) { const n = Number(value); return Number.isInteger(n) && n >= 0 ? n : 1; }
 function maxPeople(value) { const n = Number(value); return Number.isInteger(n) && n >= 1 ? n : 4; }
 async function settings() {
-  try { const x = await db.collection('settings').doc('main').get(); const { adminOpenid, ...publicSettings } = x.data; return { ...defaults, ...publicSettings }; }
+  try { const x = await db.collection('settings').doc('main').get(); const { adminOpenid, adminOpenids, adminOwnerOpenid, ...publicSettings } = x.data; return { ...defaults, ...publicSettings }; }
   catch (_) { return defaults; }
 }
 async function getDoc(name, id) {
@@ -125,9 +125,50 @@ function phase(x) {
   const today = chinaDate();
   return x.endDate < today ? 'past' : x.startDate > today ? 'upcoming' : 'current';
 }
+function adminIds(config) {
+  return [...new Set([config && config.adminOwnerOpenid, config && config.adminOpenid, ...(config && Array.isArray(config.adminOpenids) ? config.adminOpenids : [])].filter(x => typeof x === 'string' && x))];
+}
 async function requireAdmin(openid) {
   const config = await getDoc('settings', 'main');
-  if (!config || !config.adminOpenid || config.adminOpenid !== openid) throw Error('没有馆方管理权限');
+  if (!adminIds(config).includes(openid)) throw Error('没有馆方管理权限');
+}
+async function requireOwner(openid) {
+  const config = await getDoc('settings', 'main');
+  if (!config || (config.adminOwnerOpenid || config.adminOpenid) !== openid) throw Error('只有首位管理员可管理账号');
+  return config;
+}
+async function adminMembers(openid) {
+  const config = await requireOwner(openid);
+  const ownerId = config.adminOwnerOpenid || config.adminOpenid;
+  return Promise.all(adminIds(config).map(async id => {
+    const user = await getDoc('users', id);
+    return { openid: id, name: user && user.name || '未设置昵称', phone: user && user.phoneVerified ? user.phone : '', isOwner: id === ownerId };
+  }));
+}
+async function adminLookupUser(openid, phone) {
+  await requireOwner(openid);
+  const targetPhone = cleanText(phone, '手机号', 30, true);
+  if (!/^1\d{10}$/.test(targetPhone)) throw Error('请输入已验证的11位手机号');
+  const matches = (await db.collection('users').where({ phone: targetPhone, phoneVerified: true }).limit(2).get()).data;
+  if (matches.length !== 1) throw Error('未找到唯一的已验证微信账号，请对方先打开小程序并授权手机号');
+  return { openid: matches[0]._id, name: matches[0].name || '未设置昵称', phone: targetPhone };
+}
+async function adminSetMember(openid, target, enabled) {
+  await requireOwner(openid);
+  const targetId = cleanText(target, '账号标识', 100, true);
+  if (targetId === openid) throw Error('不能移除或修改首位管理员');
+  if (enabled) {
+    const user = await getDoc('users', targetId);
+    if (!user || !user.phoneVerified || !user.phone) throw Error('对方需先在小程序授权手机号');
+  }
+  await db.runTransaction(async tx => {
+    const doc = (await tx.collection('settings').doc('main').get()).data;
+    if ((doc.adminOwnerOpenid || doc.adminOpenid) !== openid) throw Error('只有首位管理员可管理账号');
+    const ids = adminIds(doc).filter(id => id !== targetId);
+    if (enabled) ids.push(targetId);
+    await tx.collection('settings').doc('main').update({ data: { adminOwnerOpenid: openid, adminOpenids: ids, updatedAt: db.serverDate() } });
+  });
+  return true;
 }
 function cleanText(value, label, max, required = false) {
   const s = String(value || '').trim();
@@ -324,7 +365,10 @@ exports.main = async (event = {}) => {
       case 'reserve': data = await reserve(openid, event); break;
       case 'myBookings': data = (await db.collection('bookings').where({ openid }).orderBy('createdAt', 'desc').limit(100).get()).data; break;
       case 'cancel': data = await cancel(openid, event.id); break;
-      case 'adminStatus': { const config = await getDoc('settings', 'main'); data = { openid, isAdmin: !!(config && config.adminOpenid && config.adminOpenid === openid) }; break; }
+      case 'adminStatus': { const config = await getDoc('settings', 'main'); data = { openid, isAdmin: adminIds(config).includes(openid), isOwner: !!config && (config.adminOwnerOpenid || config.adminOpenid) === openid }; break; }
+      case 'adminMembers': data = await adminMembers(openid); break;
+      case 'adminLookupUser': data = await adminLookupUser(openid, event.phone); break;
+      case 'adminSetMember': data = await adminSetMember(openid, event.openid, event.enabled === true); break;
       case 'adminExhibitions': await requireAdmin(openid); data = (await allCollection('exhibitions', {})).map(x => ({ ...x, phase: phase(x) })).sort((a, b) => b.startDate.localeCompare(a.startDate)); break;
       case 'adminSaveExhibition': await requireAdmin(openid); data = await adminSaveExhibition(event); break;
       case 'adminDeleteExhibition': await requireAdmin(openid); data = await adminDeleteExhibition(event.id); break;
