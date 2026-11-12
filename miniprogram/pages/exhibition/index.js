@@ -1,5 +1,6 @@
 const { call, message } = require('../../utils/api');
 const { withImages } = require('../../utils/exhibition-images');
+const { imageUrls } = require('../../utils/cloud-images');
 const chinaToday = () => new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
 const addDays = (date, n) => new Date(Date.parse(`${date}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 function dateOptions(selected, minDate, endDate) {
@@ -20,7 +21,9 @@ Page({
   onLoad(options) { this.id = options.id; this.load(); },
   async load() {
     try {
-      const exhibit = withImages(await call('exhibition', { id: this.id }));
+      const raw = withImages(await call('exhibition', { id: this.id }));
+      const image = await imageUrls([raw.coverImage, ...raw.galleryImages]);
+      const exhibit = { ...raw, coverImage: image(raw.coverImage), galleryImages: raw.galleryImages.map(image).filter(Boolean) };
       const config = await call('settings');
       const today = chinaToday();
       const advanceDays = Number.isInteger(Number(config.advanceDays)) && Number(config.advanceDays) >= 0 ? Number(config.advanceDays) : 1;

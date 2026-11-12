@@ -85,6 +85,8 @@ async function reserve(openid, event) {
   const slotId = `${exhibit._id}_${event.date}_${event.time.replace(':', '')}`;
   const bookingId = `${guardId}_${Date.now()}`;
   await db.runTransaction(async tx => {
+    const currentExhibit = await tx.collection('exhibitions').doc(exhibit._id).get();
+    if (!currentExhibit.data || !currentExhibit.data.published || currentExhibit.data.archived) throw Error('展览已下架');
     const guard = await tx.collection('bookingGuards').doc(guardId).get().catch(() => null);
     if (guard && guard.data) throw Error('该展览当天已预约');
     const phoneBooked = await tx.collection('bookingGuards').doc(phoneGuardId).get().catch(() => null);
@@ -235,6 +237,7 @@ async function adminSaveExhibition(event) {
   if (id) {
     const old = await getDoc('exhibitions', id);
     if (!old) throw Error('展览不存在');
+    if (old.archived) throw Error('展览已归档，不能修改');
     const occupied = await allCollection('slots', { exhibitionId: id });
     for (const slot of occupied.filter(x => x.reserved > 0)) {
       const time = data.dailySlots.find(x => x.time === slot.time);
@@ -249,10 +252,24 @@ async function adminSaveExhibition(event) {
 }
 async function adminDeleteExhibition(id) {
   if (!id) throw Error('缺少展览编号');
-  const booked = (await db.collection('bookings').where({ exhibitionId: id, status: 'active' }).limit(1).get()).data;
-  if (booked.length) throw Error('该展览有未取消预约，请先下架；不可删除');
-  await db.collection('exhibitions').doc(id).remove();
-  return true;
+  const exhibit = await getDoc('exhibitions', id);
+  if (!exhibit) throw Error('展览不存在');
+  if (exhibit.archived) return { cancelledCount: 0 };
+  await db.collection('exhibitions').doc(id).update({ data: { published: false, updatedAt: db.serverDate() } });
+  const active = await allCollection('bookings', { exhibitionId: id, status: 'active' });
+  let cancelledCount = 0;
+  for (const booking of active) {
+    const startsAt = Date.parse(`${booking.date}T${booking.time}:00+08:00`);
+    if (startsAt > Date.now()) {
+      try { await adminCancelBooking(booking._id, 'exhibition_archive'); cancelledCount++; }
+      catch (error) {
+        const current = await getDoc('bookings', booking._id);
+        if (!current || current.status === 'active') throw Error(`展览已下架，但有预约未取消：${error.message}`);
+      }
+    }
+  }
+  await db.collection('exhibitions').doc(id).update({ data: { archived: true, archivedAt: db.serverDate(), updatedAt: db.serverDate() } });
+  return { cancelledCount };
 }
 async function adminSaveSettings(event) {
   const raw = event.settings || {};
@@ -288,6 +305,8 @@ async function adminCreateBooking(event) {
   const slotId = `${exhibit._id}_${event.date}_${event.time.replace(':', '')}`;
   const bookingId = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
   await db.runTransaction(async tx => {
+    const currentExhibit = await tx.collection('exhibitions').doc(exhibit._id).get();
+    if (!currentExhibit.data || !currentExhibit.data.published || currentExhibit.data.archived) throw Error('展览已下架');
     const guard = await tx.collection('bookingGuards').doc(guardId).get().catch(() => null);
     if (guard && guard.data) throw Error('该手机号在此展览当天已预约');
     const booked = await tx.collection('slots').doc(slotId).get().catch(() => null);
@@ -346,6 +365,8 @@ async function adminUpdateBooking(event) {
   const oldUserId = old.openid ? `${old.openid}_${old.exhibitionId}_${old.date}` : '';
   const newUserId = old.openid ? `${old.openid}_${old.exhibitionId}_${date}` : '';
   await db.runTransaction(async tx => {
+    const currentExhibit = await tx.collection('exhibitions').doc(old.exhibitionId).get();
+    if (!currentExhibit.data || !currentExhibit.data.published || currentExhibit.data.archived) throw Error('展览已下架');
     const current = (await tx.collection('bookings').doc(id).get()).data;
     if (!current || current.status !== 'active' || current.date !== old.date || current.time !== old.time || current.people !== old.people) throw Error('预约已变更，请刷新后重试');
     const oldSlot = (await tx.collection('slots').doc(oldSlotId).get()).data;
@@ -393,7 +414,7 @@ exports.main = async (event = {}) => {
       case 'adminLookupUser': data = await adminLookupUser(openid, event.phone); break;
       case 'adminSetMember': data = await adminSetMember(openid, event.openid, event.enabled === true); break;
       case 'adminSetAccountManager': data = await adminSetAccountManager(openid, event.openid, event.enabled === true); break;
-      case 'adminExhibitions': await requireAdmin(openid); data = (await allCollection('exhibitions', {})).map(x => ({ ...x, phase: phase(x) })).sort((a, b) => b.startDate.localeCompare(a.startDate)); break;
+      case 'adminExhibitions': await requireAdmin(openid); data = (await allCollection('exhibitions', {})).filter(x => !x.archived).map(x => ({ ...x, phase: phase(x) })).sort((a, b) => b.startDate.localeCompare(a.startDate)); break;
       case 'adminSaveExhibition': await requireAdmin(openid); data = await adminSaveExhibition(event); break;
       case 'adminDeleteExhibition': await requireAdmin(openid); data = await adminDeleteExhibition(event.id); break;
       case 'adminSettings': await requireAdmin(openid); data = await settings(); break;
