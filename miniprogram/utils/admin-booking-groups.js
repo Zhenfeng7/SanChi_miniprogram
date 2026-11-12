@@ -11,7 +11,8 @@ function groupBookings(bookings, today, showAll) {
   return {
     todayBookings: visible.filter(item => item.date === today).sort(byTime),
     futureBookings: visible.filter(item => item.date > today).sort(byTime),
-    pastWeekBookings: showAll ? visible.filter(item => item.date >= weekStart && item.date < today).sort((a, b) => byTime(b, a)) : []
+    pastWeekBookings: showAll ? visible.filter(item => item.date >= weekStart && item.date < today).sort((a, b) => byTime(b, a)) : [],
+    olderBookings: showAll ? visible.filter(item => !item.date || item.date < weekStart).sort((a, b) => byTime(b, a)) : []
   };
 }
 

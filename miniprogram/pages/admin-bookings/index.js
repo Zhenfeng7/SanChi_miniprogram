@@ -2,7 +2,7 @@ const { call, message } = require('../../utils/api');
 const { beijingDate, groupBookings } = require('../../utils/admin-booking-groups');
 function blank() { return { id: '', exhibitionId: '', date: '', time: '', people: 1, name: '', phone: '' }; }
 Page({
-  data: { bookings: [], todayBookings: [], futureBookings: [], pastWeekBookings: [], today: beijingDate(), showAll: false, futureExpanded: false, exhibitions: [], mode: 'list', form: blank(), exhibitionName: '', phoneLocked: false, timeOptions: [], saving: false },
+  data: { bookings: [], todayBookings: [], futureBookings: [], pastWeekBookings: [], olderBookings: [], today: beijingDate(), showAll: false, futureExpanded: false, exhibitions: [], mode: 'list', form: blank(), exhibitionName: '', phoneLocked: false, timeOptions: [], saving: false },
   onShow() { this.load(); },
   async load() {
     try {
