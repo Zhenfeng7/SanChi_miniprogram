@@ -230,6 +230,15 @@ async function allCollection(name, query) {
     if (page.length < 100) return out;
   }
 }
+async function bookingsWithCurrentExhibitionTitles(bookings) {
+  const ids = [...new Set(bookings.map(x => x.exhibitionId).filter(Boolean))];
+  const titles = new Map();
+  for (let offset = 0; offset < ids.length; offset += 10) {
+    const batch = await Promise.all(ids.slice(offset, offset + 10).map(id => getDoc('exhibitions', id)));
+    batch.forEach((exhibit, index) => { if (exhibit && exhibit.title) titles.set(ids[offset + index], exhibit.title); });
+  }
+  return bookings.map(booking => ({ ...booking, exhibitionTitle: titles.get(booking.exhibitionId) || booking.exhibitionTitle }));
+}
 async function adminSaveExhibition(event) {
   const raw = event.exhibition || {};
   const data = cleanExhibition(raw);
@@ -407,7 +416,7 @@ exports.main = async (event = {}) => {
       case 'saveProfile': data = await saveProfile(openid, event); break;
       case 'wechatPhone': data = await phoneFromWechat(openid, event.code); break;
       case 'reserve': data = await reserve(openid, event); break;
-      case 'myBookings': data = (await db.collection('bookings').where({ openid }).orderBy('createdAt', 'desc').limit(100).get()).data; break;
+      case 'myBookings': data = await bookingsWithCurrentExhibitionTitles((await db.collection('bookings').where({ openid }).orderBy('createdAt', 'desc').limit(100).get()).data); break;
       case 'cancel': data = await cancel(openid, event.id); break;
       case 'adminStatus': { const config = await getDoc('settings', 'main'); data = { openid, isAdmin: adminIds(config).includes(openid), isOwner: ownerId(config) === openid, canManageAdmins: accountManagerIds(config).includes(openid) }; break; }
       case 'adminMembers': data = await adminMembers(openid); break;
@@ -419,7 +428,7 @@ exports.main = async (event = {}) => {
       case 'adminDeleteExhibition': await requireAdmin(openid); data = await adminDeleteExhibition(event.id); break;
       case 'adminSettings': await requireAdmin(openid); data = await settings(); break;
       case 'adminSaveSettings': await requireAdmin(openid); data = await adminSaveSettings(event); break;
-      case 'adminBookings': await requireAdmin(openid); data = (await allCollection('bookings', {})).sort((a, b) => (b.date || '').localeCompare(a.date || '')); break;
+      case 'adminBookings': await requireAdmin(openid); data = (await bookingsWithCurrentExhibitionTitles(await allCollection('bookings', {}))).sort((a, b) => (b.date || '').localeCompare(a.date || '')); break;
       case 'adminCreateBooking': await requireAdmin(openid); data = await adminCreateBooking(event); break;
       case 'adminCancelBooking': await requireAdmin(openid); data = await adminCancelBooking(event.id, openid); break;
       case 'adminUpdateBooking': await requireAdmin(openid); data = await adminUpdateBooking(event); break;
