@@ -1,0 +1,14 @@
+.crop-page { min-height:100vh; box-sizing:border-box; padding:40rpx 0 100rpx; background:#f7f5f1; }
+.crop-page .eyebrow,.crop-page .h1,.instructions { margin-left:40rpx; margin-right:40rpx; }
+.crop-page .h1 { margin-top:12rpx; }
+.instructions { margin-top:18rpx; margin-bottom:38rpx; line-height:1.6; }
+.crop-area { margin:0 auto; overflow:hidden; background:#ddd7cf; box-shadow:0 0 0 2rpx #735d45; }
+.crop-area image { display:block; }
+.crop-label { margin:22rpx 40rpx 0; text-align:center; color:#735d45; font-size:23rpx; }
+.zoom-row { display:flex; align-items:center; gap:12rpx; margin:48rpx 40rpx 0; color:#6f665c; font-size:26rpx; }
+.zoom-row slider { flex:1; margin:0; }
+.buttons { display:flex; gap:20rpx; margin:48rpx 40rpx 0; }
+.buttons button { flex:1; margin:0; height:88rpx; line-height:88rpx; font-size:27rpx; text-align:center; border-radius:6rpx; }
+.buttons .cancel { background:#e9e4dc; color:#66584b; }
+.buttons .confirm { background:#735d45; color:#fff; }
+.export-canvas { position:fixed; left:-2000px; top:0; pointer-events:none; }

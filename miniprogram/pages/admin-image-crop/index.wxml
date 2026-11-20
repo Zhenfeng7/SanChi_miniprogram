@@ -1,0 +1,14 @@
+<view class="crop-page">
+  <view class="eyebrow">IMAGE CROP</view>
+  <view class="h1">调整显示范围</view>
+  <view class="muted instructions">拖动照片选择要保留的区域，下面的框就是首页实际显示的比例。</view>
+  <movable-area wx:if="{{ready}}" class="crop-area" style="width:{{viewportWidth}}px;height:{{viewportHeight}}px">
+    <movable-view direction="all" x="{{x}}" y="{{y}}" damping="80" bindchange="moved" style="width:{{imageWidth}}px;height:{{imageHeight}}px">
+      <image src="{{src}}" mode="scaleToFill" style="width:{{imageWidth}}px;height:{{imageHeight}}px" />
+    </movable-view>
+  </movable-area>
+  <view class="crop-label" wx:if="{{ready}}">裁切框内的内容会用于首页展示</view>
+  <view class="zoom-row" wx:if="{{ready}}"><text>缩放</text><slider min="100" max="250" value="{{zoomPercent}}" activeColor="#735d45" backgroundColor="#d8d1c6" block-size="18" bindchange="zoomChanged" /><text>{{zoomPercent}}%</text></view>
+  <view class="buttons"><button class="cancel" bindtap="cancel">取消</button><button class="confirm" loading="{{saving}}" disabled="{{!ready || saving}}" bindtap="confirm">确认裁剪并上传</button></view>
+  <canvas canvas-id="cropCanvas" class="export-canvas" style="width:{{outputWidth}}px;height:{{outputHeight}}px" />
+</view>

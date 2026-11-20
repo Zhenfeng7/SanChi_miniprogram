@@ -26,7 +26,7 @@ Page({
     if (kind === 'gallery' && this.data.form.galleryImages.length >= 12) { wx.showToast({ title: '最多添加12张', icon: 'none' }); return; }
     this.setData({ uploading: true });
     try {
-      const files = await chooseAndUpload('exhibitions', kind === 'cover' ? 1 : Math.min(9, 12 - this.data.form.galleryImages.length));
+      const files = await chooseAndUpload('exhibitions', kind === 'cover' ? 1 : Math.min(9, 12 - this.data.form.galleryImages.length), kind === 'cover' ? 686 / 380 : 0);
       if (kind === 'cover') this.setData({ 'form.coverImage': files[0] });
       else this.setData({ 'form.galleryImages': [...this.data.form.galleryImages, ...files] });
       await this.refreshPreviews();

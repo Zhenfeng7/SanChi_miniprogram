@@ -11,7 +11,7 @@ Page({
     if (this.data.uploading) return;
     if (this.data.form.bannerImages.length >= 8) { wx.showToast({ title: '最多添加8张', icon: 'none' }); return; }
     this.setData({ uploading: true });
-    try { const images = await chooseAndUpload('banners', Math.min(8 - this.data.form.bannerImages.length, 4)); this.setData({ 'form.bannerImages': [...this.data.form.bannerImages, ...images] }); await this.refreshPreviews(); }
+    try { const images = await chooseAndUpload('banners', 1, 750 / 560); this.setData({ 'form.bannerImages': [...this.data.form.bannerImages, ...images] }); await this.refreshPreviews(); }
     catch (e) { if (!/cancel/i.test(e.errMsg || '')) message(e); }
     finally { this.setData({ uploading: false }); }
   },
