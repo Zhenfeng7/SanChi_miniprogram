@@ -55,6 +55,12 @@ Page({
   pickDate(e) { this.selectDate(e.detail.value); },
   choosePeople(e) { const people = Number(e.currentTarget.dataset.people); this.setData({ people, slots: this.decorateSlots(this.data.slots, people), time: '' }); },
   chooseTime(e) { const x = this.data.slots.find(s => s.time === e.currentTarget.dataset.time); if (x && x.remaining >= this.data.people) this.setData({ time: x.time }); },
+  onShareAppMessage() {
+    const exhibit = this.data.exhibit;
+    return exhibit && this.id
+      ? { title: `${exhibit.title}｜三尺美术馆`, path: `/pages/exhibition/index?id=${encodeURIComponent(this.id)}` }
+      : { title: '三尺美术馆｜展览与预约', path: '/pages/home/index' };
+  },
   async reserve() {
     if (this.data.busy || !this.data.time) return;
     this.setData({ busy: true });

@@ -23,5 +23,6 @@ Page({
   },
   detail(e) { wx.navigateTo({ url: `/pages/exhibition/index?id=${e.currentTarget.dataset.id}` }); },
   booking() { wx.switchTab({ url: '/pages/booking/index' }); },
-  phone() { if (this.data.settings.contactPhone) wx.makePhoneCall({ phoneNumber: this.data.settings.contactPhone }); }
+  phone() { if (this.data.settings.contactPhone) wx.makePhoneCall({ phoneNumber: this.data.settings.contactPhone }); },
+  onShareAppMessage() { return { title: '三尺美术馆｜展览与预约', path: '/pages/home/index' }; }
 });
